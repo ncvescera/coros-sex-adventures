@@ -16,7 +16,7 @@ all: $(TARGET)
 
 # dipendenze dell'eseguibile che voglio generare
 $(TARGET): $(BUILDIR)/main.o $(BUILDIR)/binarytree.o
-	$(CC) $(CFLAGS) $^ -o $@
+	$(CC) $(CFLAGS) $(INCLUDES) $(OPTFLAGS) $^ -o $@
 
 # scrivere le due make rule per main.o e binarytree.o
 $(BUILDIR)/main.o: $(SRCDIR)/main.c
@@ -31,6 +31,8 @@ debug: all
 
 clean: 
 	-rm $(BUILDIR)/*
+
+test: test1 test2
 
 test1: $(TARGET)
 	@echo "Eseguo test1"
