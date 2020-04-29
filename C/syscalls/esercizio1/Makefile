@@ -22,5 +22,10 @@ setup :
 	@ ls -ahlR
 
 test1: main
-	./main test || if [ $$? -eq 2 ]; then echo OK; else exit 1; fi;
+	# Test 1: controlla se il programma esce con errore 2.
+	# Se esce con errore 2 il test è superato
+	@ echo "Test fase 1 ..."
+	./main notExistingDir; if [ $$? -eq 2 ]; then echo "[OK]"; else exit 1; fi;
 	
+	@ echo "\nTest fase 2 ..."
+	./main test; if [ $$? ]; then echo "[OK]"; else exit 1; fi;

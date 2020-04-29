@@ -1,9 +1,3 @@
-// Scrivere un programma C che:
-// - dato come argomento un nome di directory
-// - visita ricorsivamente tutto il sottoalbero di directory che ha come radice la directory passata come argomento
-// - Per ogni directory, il programma deve stampare sullo standard output le informazioni sui file trovati:
-// -- "nome file" "size" "permessi"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -168,38 +162,6 @@ int main(int argc, char *argv[]) {
 
     }
 }   
-
-
-
-
-// Passo 1: Controlliamo che l'argomento passato sia una directory
-    // - man 2 stat
-    // - vedi slide 32
-    // - TEST:
-    // -- ./main questaCartellaNonEsiste; echo $? # output atteso ENOENT == 2
-    // -- ./main Makefile; echo $? # output atteso == EXIT_FAILURE (cat /usr/include/stdlib.h | grep "EXIT_FAILURE")
-    // -- ./main test; echo $? # output atteso 0
-
-    // Passo 2: Aprire la cartella
-    // - vedi slide 36
-    // - TEST: mkdir impossibleDir; sudo chmod -R 0 impossibleDir; ./main impossibleDir; echo $? # output atteso EACCES == 13
-    // -- rimuovete poi la cartella con sudo rmdir
-
-    // Passo 3: Lettura cartella (senza ricorsione)
-    // - Stampare contenuto cartella
-    // -- vedi slide 37-41
-    // -- dividere tra cartelle e file
-    // -- per i file stampare size e permessi
-    // - Gestione chiusura cartella
-    // - Suggerimenti:
-    // -- definire una macro MAXSIZE (scegliete voi una grandezza) che verra' usata come max buffer per gestione stringhe
-    // -- utilizzare strnpcy/strncat per definire correttamente una variabile "filename" per i file all'interno della cartella
-
-    // Passo 4: ls ricorsivo
-    // - Estendere passo 3 come segue:
-    // -- nel caso in cui la variabile "filename" sia una cartella chiamare ricorsivamente lsRecursiveDirectory
-    // - ATTENZIONE:
-    // -- gestire directory . ..
 
     // Passo 5: Miglioriamo il nostro codice
     // - Definire una macro SYSCALL(nome, systemcall, stringa-errore-da-stampare, altri parametri)
