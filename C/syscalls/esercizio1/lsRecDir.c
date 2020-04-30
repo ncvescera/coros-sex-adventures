@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
 #include <errno.h>
 #include <sys/types.h>
@@ -9,6 +10,15 @@
 
 // dimenzione buffer per cwd
 #define BUFFERSIZE 1024
+
+#define SYSCALL(return_type, syscall, str_err, check_err, ...) ({\
+    return_type res = syscall(__VA_ARGS__);\
+    if(res == check_err) {\
+        perror(str_err);\
+        exit(errno);\
+    }\
+    res;\
+})
 
 /*Ritorna le info del file gestendo gli errori*/
 struct stat get_file_info(const char* file) {
@@ -161,10 +171,4 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
 
     }
-}   
-
-    // Passo 5: Miglioriamo il nostro codice
-    // - Definire una macro SYSCALL(nome, systemcall, stringa-errore-da-stampare, altri parametri)
-    // -- tale macro deve eseguire systemcall, in caso di errore deve uscire con l'errore errno ritornato e stampare sullo standard-error la stringa-errore-da-stampare
-    // -- decidere se e come poter utilizzare "altri paramentri"
-    // - Gestire eventuale errore lunghezza buffer durante la manipolazione di stringhe
+}
