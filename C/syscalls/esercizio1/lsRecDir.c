@@ -23,10 +23,12 @@
 /*Ritorna le info del file gestendo gli errori*/
 struct stat get_file_info(const char* file) {
     struct stat info;
+    int err;
 
     if(stat(file, &info) == -1){
+        err = errno;    // perror potrebbe alterare errno
         perror("Getting file info ");
-        exit(errno);
+        exit(err);
     }
 
     return info;
@@ -35,10 +37,12 @@ struct stat get_file_info(const char* file) {
 /*apre una cartella gestendo gli errori*/
 DIR* open_dir(const char* path) {
     DIR* dir;
+    int err;
 
     if((dir = opendir(path)) == NULL) {
+        err = errno;
         perror("Opening dir ");
-        exit(errno);
+        exit(err);
     }
 
     return dir;
@@ -46,9 +50,12 @@ DIR* open_dir(const char* path) {
 
 /*chiude una cartella gestendo gli errori*/
 void close_dir(DIR* dir) {
+    int err;
+
     if((closedir(dir)) == -1){
+        err = errno;
         perror("Closing dir ");
-        exit(errno);
+        exit(err);
     }
 
     return;
@@ -57,10 +64,12 @@ void close_dir(DIR* dir) {
 /*Prende la current working directory (cwd) gestendo gli errori*/
 char* get_cwd() {
     char* buffer = calloc(sizeof(char), BUFFERSIZE);
+    int err;
 
     if(getcwd(buffer, BUFFERSIZE) == NULL){
+        err = errno;
         perror("Getting cwd ");
-        exit(errno);
+        exit(err);
     }
 
     return(buffer);
@@ -68,9 +77,12 @@ char* get_cwd() {
 
 /*Cambia cartella gestendo gli errori*/
 void change_dir(const char* path) {
+    int err;
+
     if(chdir(path) == -1){
+        err = errno;
         perror("Changing dir ");
-        exit(errno);
+        exit(err);
     }
 
     return;
