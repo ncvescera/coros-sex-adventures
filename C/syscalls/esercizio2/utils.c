@@ -1,18 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <dirent.h>
-#include <unistd.h>
-#include <fcntl.h>
-
-#define CWD_BUFFERSIZE 1024
-#define READ_BUFFERSIZE 1024
-
-#define IS_OCCURRED_ERR (if (errno) { return; })
+#include "utils.h"
 
 /*Ritorna le info del file gestendo gli errori*/
 struct stat get_file_info(const char *file)
@@ -21,7 +7,6 @@ struct stat get_file_info(const char *file)
 
     if (stat(file, &info) == -1)
     {
-        //perror("Getting file info ");
         perror(file);
     }
 
@@ -36,7 +21,6 @@ DIR *open_dir(const char *path)
     if ((dir = opendir(path)) == NULL)
     {
         perror("Opening dir ");
-        exit(errno);
     }
 
     return dir;
@@ -61,7 +45,6 @@ char *get_cwd()
     if (getcwd(buffer, CWD_BUFFERSIZE) == NULL)
     {
         perror("Getting cwd ");
-        //exit(errno);
     }
 
     return (buffer);
@@ -128,7 +111,9 @@ void print_file(const char *file)
         printf("TITLE: %s\n\n", file);
         while ((readed_byte = read(file_desc, buffer, READ_BUFFERSIZE)) > 0)
         {
-            printf("%s", buffer);
+            if (write(1, buffer, readed_byte) < 0) {    // scrive sullo stdout
+                perror("Writing stdout");
+            }
         }
 
         if (readed_byte == -1)
@@ -140,9 +125,6 @@ void print_file(const char *file)
     close_file(file_desc);
     if (errno)
         return;
-
-    //Ripulisce il buffer
-    memset(buffer, 0, strlen(buffer));
 
     printf("\n---------------------------------\n");
 
