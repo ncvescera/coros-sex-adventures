@@ -11,7 +11,7 @@ main: cat.o utils.o
 cat.o: cat.c utils.h
 	$(CC) $(CFLAGS) -c $<
 
-utils.o: utils.c
+utils.o: utils.c utils.h
 	$(CC) $(CFLAGS) -c $<
 
 clean:
