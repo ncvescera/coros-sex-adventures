@@ -3,6 +3,24 @@
 
 #include "recursivedir.h"
 
+/*
+ * ESERCIZIO 1
+ * 
+ * Nel main controllo se gli argomenti passati sono giusti:
+ *  gli argomenti devono essere non più di 2
+ *  il primo deve essere l'estensione che tramite la funzione is_good_ext() viene validata (controlla se il primo carattere è un .)
+ *  il secondo è il path dove andare ad operare
+ * 
+ * Il file recursivedir.c contiene tutte le funzioni che serviranno a gestire la ricorsione e la logica del programma.
+ * La funzione custom_find() è la parte centrale del programma dove la ricorsione viene gestita tramite
+ * la funzione change_dir() che permette di spostarsi all'interno delle varie cartelle. Il caso base è quando trova un file, il caso ricorsivo è
+ * quando trova una cartella.
+ * 
+ * Ogni volta che c'è un errore questo viene gestito tramite la stampa di un messaggio esplicativo (perror()) e il programma viene interrotto.
+ * 
+ * Le altre funzioni all'interno di recursivedir.c servono ad utilizzare varie Systemcall gestendo gli errori.
+ */
+
 /* Controlla se la stringa passata inizia con . */
 int is_good_ext(const char *name)
 {
