@@ -3,9 +3,9 @@ CFLAGS = -Wall -pedantic -std=c99
 
 .PHONY: clean setup
 
-all: main
+all: custom_find
 
-main: main.o recursivedir.o
+custom_find: main.o recursivedir.o
 	$(CC) $(CFLAGS) $^ -o $@
 
 main.o: main.c recursivedir.h
@@ -15,13 +15,14 @@ recursivedir.o: recursivedir.c recursivedir.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	- rm main *.o
+	- rm custom_find *.o
+	- rm -rf test
 
 setup :
 	@ echo "Creazione cartelle per test"
 	@ mkdir test test/A test/B test/A/C
-	@ head -c 1KB /dev/zero > test/B/file1
-	@ head -c 2KB /dev/zero > test/B/file2
-	@ head -c 5KB /dev/zero > test/A/C/file3
+	@ touch test/B/file1
+	@ touch test/B/file2.txt
+	@ touch test/A/C/file3.txt
 	@ echo "Stampa:"
 	@ ls -ahlR

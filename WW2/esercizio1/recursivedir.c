@@ -1,6 +1,6 @@
 #include "recursivedir.h"
 
-/*Ritorna le info del file gestendo gli errori*/
+/* Ritorna le info del file gestendo gli errori */
 struct stat get_file_info(const char* file) {
     struct stat info;
     int err;
@@ -8,14 +8,14 @@ struct stat get_file_info(const char* file) {
     if(stat(file, &info) == -1)
     {
         err = errno;    // perror potrebbe alterare errno
-        perror("Getting file info ");
+        perror("Getting file info");
         exit(err);
     }
 
     return info;
 }
 
-/*Prende la current working directory (cwd) gestendo gli errori*/
+/* Prende la current working directory (cwd) gestendo gli errori */
 char* get_cwd()
 {
     char* buffer = calloc(sizeof(char), BUFFERSIZE);
@@ -24,14 +24,14 @@ char* get_cwd()
     if(getcwd(buffer, BUFFERSIZE) == NULL)
     {
         err = errno;
-        perror("Getting cwd ");
+        perror("Getting cwd");
         exit(err);
     }
 
     return(buffer);
 }
 
-/*Cambia cartella gestendo gli errori*/
+/* Cambia cartella gestendo gli errori */
 void change_dir(const char* path)
 {
     int err;
@@ -39,15 +39,15 @@ void change_dir(const char* path)
     if(chdir(path) == -1)
     {
         err = errno;
-        perror("Changing dir ");
+        perror("Changing dir");
         exit(err);
     }
 
     return;
 }
 
-/*apre una cartella gestendo gli errori*/
-DIR* open_dir(const char* path)
+/* Apre una cartella gestendo gli errori */
+DIR *open_dir(const char* path)
 {
     DIR* dir;
     int err;
@@ -55,14 +55,14 @@ DIR* open_dir(const char* path)
     if((dir = opendir(path)) == NULL)
     {
         err = errno;
-        perror("Opening dir ");
+        perror("Opening dir");
         exit(err);
     }
 
     return dir;
 }
 
-/*chiude una cartella gestendo gli errori*/
+/* Chiude una cartella gestendo gli errori */
 void close_dir(DIR* dir)
 {
     int err;
@@ -70,7 +70,7 @@ void close_dir(DIR* dir)
     if((closedir(dir)) == -1)
     {
         err = errno;
-        perror("Closing dir ");
+        perror("Closing dir");
         exit(err);
     }
 
@@ -80,10 +80,12 @@ void close_dir(DIR* dir)
 /* Ritrona un puntatore all'inizio dell'estenzione del file passato */
 const char *get_file_ext(const char *filename)
 {
+    // ritorna un puntatore all'ultimo carattere . presente nella stringa
     const char *dot = strrchr(filename, '.');
+
     if(!dot || dot == filename)
     {
-        return "";
+        return NULL;
     } else
     {
         return dot;
@@ -93,27 +95,18 @@ const char *get_file_ext(const char *filename)
 /* Serve per ignorare le cartelle . e .. */
 int isDot(const char dir[])
 {
+    // ritorna True se la cartella passata è . o ..
     return (strlen(dir) > 0 && dir[strlen(dir) - 1] == '.');
 }
 
-void lsRecursiveDirectory(const char *nomedirectory, const char *extention)
+void custom_find(const char *nomedirectory, const char *extention)
 {
-    static int tab_numb = 0;    // server per indentare l'output
-
     struct stat info = get_file_info(nomedirectory);    // prende i dettagli del file
     char *cwd = get_cwd();  // salva la directory corrente per tornare indietro con la ricorsione
-
-    // serve per indentare l'output
-    for(int i = 0; i < tab_numb; i++)
-        printf("\t");
-    
-    //printf("%s ", nomedirectory);
     
     // controlla se il file passato è una cartella
     if(S_ISDIR(info.st_mode))
     {
-        //printf("[dir]\n");
-
         // apertura della cartella
         DIR* dir = open_dir(nomedirectory);
 
@@ -129,14 +122,14 @@ void lsRecursiveDirectory(const char *nomedirectory, const char *extention)
                 continue;
             }
 
-            lsRecursiveDirectory(file->d_name, extention);
-            
+            // continua la ricorsione
+            custom_find(file->d_name, extention);
         }
 
         // Gestione errori durante la lettura della cartella
         if(errno != 0)
         {
-            perror("Getting file name ");
+            perror("Getting file name");
             exit(errno);
         }
 
@@ -146,9 +139,10 @@ void lsRecursiveDirectory(const char *nomedirectory, const char *extention)
     }
     else
     {
+        // prende l'estenzione del file
         const char *ext = get_file_ext(nomedirectory);
 
-        if (strcmp(ext, "") != 0)
+        if (ext != NULL)
         {
             if (strcmp(ext, extention) == 0)
             {

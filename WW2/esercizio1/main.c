@@ -3,19 +3,7 @@
 
 #include "recursivedir.h"
 
-/* vedere se sta roba ha abbastanza senso,
-   ma credo int sia meglio */
-/*
-enum bool {false, true};
-typedef enum bool bool;
-
-bool is_good_ext(const char *name);
-*/
-
-/* 
- * controlla se è un'estenzione controllando che
- * il primo carattere della stringa sia un . 
- */
+/* Controlla se la stringa passata inizia con . */
 int is_good_ext(const char *name)
 {
     if (name[0] == '.')
@@ -32,7 +20,7 @@ int main(int argc, char const *argv[])
 {
     if (argc < 2)
     {
-        fprintf(stderr, "Dei passare almeno un argomento\n");
+        fprintf(stderr, "Devi passare almeno un argomento\n");
         exit(EXIT_FAILURE);
     } else if (argc > 3)
     {
@@ -59,11 +47,10 @@ int main(int argc, char const *argv[])
             path = argv[2];
         }
         
-        lsRecursiveDirectory(path, argv[1]);
+        custom_find(path, argv[1]);
 
         return(EXIT_SUCCESS);
     }
-    
-    
+
 }
 
