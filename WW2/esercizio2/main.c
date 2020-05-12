@@ -5,6 +5,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+/* Funzione che calcola ricorsivamente l'nesimo numero della sequenza di fibonacci */
 int fibonacci(int n)
 {
     pid_t pid1;
@@ -15,15 +16,15 @@ int fibonacci(int n)
     // controllo per casi elementari
     switch (n)
     {
-    case 0:
-        return 0;
-    case 1:
-        return 1;
-    case 2:
-        return 1;
-    
-    default:
-        break;
+        case 0:
+            return 0;
+        case 1:
+            return 1;
+        case 2:
+            return 1;
+
+        default:
+            break;
     }
 
     // Primo Fork
@@ -74,6 +75,7 @@ int fibonacci(int n)
 	return (result);
 }
 
+/* Trasforma una stringa in intero gestendo i vari errori */
 int str_to_int(const char *str)
 {
     int result;
