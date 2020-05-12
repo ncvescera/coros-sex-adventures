@@ -9,4 +9,4 @@ main: main.c
 	$(CC) $(CFLAGS) $< -o $@
 
 clean:
-	rm *.o main
+	rm main
