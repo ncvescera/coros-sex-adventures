@@ -56,6 +56,7 @@ void thread_join(pthread_t id, void **status)
     return;
 }
 
+/* Gestisce gli errori della funzione  pthread_mutex_lock */
 void thread_mutex_lock(pthread_mutex_t *mutex)
 {
     int err = pthread_mutex_lock(mutex);
@@ -69,6 +70,7 @@ void thread_mutex_lock(pthread_mutex_t *mutex)
     return;
 }
 
+/* Gestisce gli errori della funzione  pthread_mutex_unlock */
 void thread_mutex_unlock(pthread_mutex_t *mutex)
 {
     int err = pthread_mutex_unlock(mutex);

@@ -13,17 +13,19 @@ static pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t stazione = PTHREAD_COND_INITIALIZER;
 static pthread_cond_t centro_storico = PTHREAD_COND_INITIALIZER;
 
-//static int cond = 1;
-static const int POSTI_MAX = 4;
-static int passeggeri = POSTI_MAX;
+// Posti del minimetro
+static const int POSTI_MAX = 4; // numero massimo di passeggeri per navetta
+static int n_posti; 
 
 static void *cabina(void *arg)
 {
-    int posizione = 0;
-    //int *myid = (int *) arg;
-    
+    //int *myid = (int *) arg; // qualora servisse l'id del thread
+    n_posti = POSTI_MAX; // inizializza il numero di posti dipsonibili
+    int posizione = 0;  // la posizione attuale del mini, 0 stazione, 1 centro storico
+
     while (1)
     {
+        // identifica quali thread svegliare
         pthread_cond_t *local_posizione;
 
         if (posizione == 0)
@@ -34,15 +36,17 @@ static void *cabina(void *arg)
             local_posizione = &centro_storico;
         }
 
+        // sveglia i thread della stazione in cui sta il mini
         thread_cond_broadcast(local_posizione);
 
-        while (passeggeri > 0)
+        // aspetta che tutti i passeggeri siano a bordo
+        while (n_posti > 0)
         {
             sleep(1);
             continue;
         }
 
-        printf("Passeggeri: %d\n", passeggeri);
+        printf("Posti liberi: %d\n", n_posti);
 
         // blocca la risorsa dagli altri thread
         thread_mutex_lock(&mtx);
@@ -50,7 +54,9 @@ static void *cabina(void *arg)
         printf("PARTENZA ...\n");
         sleep(2);
         printf("Arrivo!\n");
-        passeggeri = POSTI_MAX;
+
+        // ripristina il numero di posti liberi (fa scendere i passeggeri e libera i posti)
+        n_posti = POSTI_MAX;
 
         // inversione della stazione
         if (posizione == 0)
@@ -61,9 +67,8 @@ static void *cabina(void *arg)
             posizione = 0;
         }
 
+        // libera la risorsa
         thread_mutex_unlock(&mtx);
-
-        //sleep(2);
     }
 
     return((void *) 0);
@@ -71,14 +76,17 @@ static void *cabina(void *arg)
 
 static void *turista(void *arg)
 {
+    // inizializza il turista
     init_data *data = (init_data *) arg;
     pthread_t *id = data->tid;
     int posizione = data->posizione;
 
-    // sezione critica
-    //thread_mutex_lock(&mtx);
+    // elimina la memoria allocata dinamicamente ormai non più utile
+    free(data);
+
     while (1)
     {
+        // identifica la stazione in cui si trova
         pthread_cond_t *local_posizione;
 
         if (posizione == 0)
@@ -90,12 +98,14 @@ static void *turista(void *arg)
             local_posizione = &centro_storico;
         }
 
+        // aspetta che il mini gli dia la possibilità di salire
         thread_cond_wait(local_posizione, &mtx);
 
-        // prende posto nel minimetro
-        if (passeggeri)
+        // controlla se ci sono posti liberi
+        if (n_posti)
         {
-            passeggeri --;
+            // prende posto nel minimetro
+            n_posti --;
 
             printf("ID: %ld sale\n", *id);
 
@@ -113,15 +123,16 @@ static void *turista(void *arg)
 
             sleep(2);
 
-        } else
+        } else  // se non ci sono posti liberi rilascia la risorsa (acquisita dopo essersi svegliato) e ricomincia
         {
             thread_mutex_unlock(&mtx);
         }
     }
+
     return((void *) 0);
 }
 
-
+// Il numero di turisti da inizializzare
 #define NTURISTI 5
 
 int main(int argc, char const *argv[])
@@ -147,7 +158,7 @@ int main(int argc, char const *argv[])
     printf("T1: %d\n", status);*/
 
     // Inizializzazione Turisti
-    pthread_t turisti[5];
+    pthread_t turisti[NTURISTI];
 
     for (int i = 0; i < NTURISTI; i++)
     {
@@ -156,6 +167,7 @@ int main(int argc, char const *argv[])
         data->posizione = 0;
 
         thread_create(&turisti[i], NULL, &turista, (void *) data);
+
         printf("ID: %ld ", turisti[i]);
     }
 
