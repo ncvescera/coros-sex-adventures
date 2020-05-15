@@ -12,6 +12,7 @@ static pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
 // CV per centro e stazione
 static pthread_cond_t stazione = PTHREAD_COND_INITIALIZER;
 static pthread_cond_t centro_storico = PTHREAD_COND_INITIALIZER;
+static pthread_cond_t in_mini = PTHREAD_COND_INITIALIZER;
 
 // Posti del minimetro
 static const int POSTI_MAX = 4; // numero massimo di passeggeri per navetta
@@ -40,6 +41,8 @@ static void *cabina(void *arg)
         thread_cond_broadcast(local_posizione);
 
         // aspetta che tutti i passeggeri siano a bordo
+        //printf("Aspetto\n");
+        //fflush(stdout);
         while (n_posti > 0)
         {
             sleep(1);
@@ -51,12 +54,23 @@ static void *cabina(void *arg)
         // blocca la risorsa dagli altri thread
         thread_mutex_lock(&mtx);
 
-        printf("PARTENZA ...\n");
+        printf("\nPARTENZA ...\n");
         sleep(2);
-        printf("Arrivo!\n");
+        printf("Arrivo!\n\n");
+
+        // libera la risorsa
+        thread_mutex_unlock(&mtx);
 
         // ripristina il numero di posti liberi (fa scendere i passeggeri e libera i posti)
-        n_posti = POSTI_MAX;
+        thread_cond_broadcast(&in_mini);
+
+        while (n_posti < POSTI_MAX)
+        {
+            sleep(1);
+            continue;
+        }
+
+        printf("\n");
 
         // inversione della stazione
         if (posizione == 0)
@@ -67,8 +81,7 @@ static void *cabina(void *arg)
             posizione = 0;
         }
 
-        // libera la risorsa
-        thread_mutex_unlock(&mtx);
+        sleep(2);   // attende 2 secondi altrimenti i turisti non riceverebbero il signale per svegliarsi
     }
 
     return((void *) 0);
@@ -110,6 +123,14 @@ static void *turista(void *arg)
             printf("ID: %ld sale\n", *id);
 
             // libera la risorsa
+            thread_mutex_unlock(&mtx);
+
+            // aspetta di poter scendere e liberare il posto
+            thread_cond_wait(&in_mini, &mtx);
+            
+            n_posti ++;
+
+            printf("ID: %ld scende\n", *id);
             thread_mutex_unlock(&mtx);
 
             // inversione della stazione
@@ -160,7 +181,17 @@ int main(int argc, char const *argv[])
     // Inizializzazione Turisti
     pthread_t turisti[NTURISTI];
 
-    for (int i = 0; i < NTURISTI; i++)
+    // inizializzo un thread con posizione centro storico
+    init_data *data = malloc(sizeof(init_data));
+    data->tid = &turisti[0];
+    data->posizione = 1;
+
+    thread_create(&turisti[0], NULL, &turista, (void *) data);
+
+    printf("ID: %ld ", turisti[0]);
+
+    // inizializzo gli altri thread con posizione stazione
+    for (int i = 1; i < NTURISTI; i++)
     {
         init_data *data = malloc(sizeof(init_data));
         data->tid = &turisti[i];
