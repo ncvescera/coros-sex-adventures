@@ -17,7 +17,6 @@ static void *cabina(void *arg)
 {
     //int *myid = (int *) arg; // qualora servisse l'id del thread
     n_posti = POSTI_MAX; // inizializza il numero di posti dipsonibili
-    //int posizione = 0;  // la posizione attuale del mini, 0 stazione, 1 centro storico
     fermata posizione = STAZIONE;
 
     while (1)
@@ -37,8 +36,6 @@ static void *cabina(void *arg)
         thread_cond_broadcast(local_posizione);
 
         // aspetta che tutti i passeggeri siano a bordo
-        //printf("Aspetto\n");
-        //fflush(stdout);
         while (n_posti > 0)
         {
             sleep(1);
@@ -155,26 +152,6 @@ static void *turista(void *arg)
 
 int main(int argc, char const *argv[])
 {
-    /*
-    pthread_t minimetro;
-    int err;
-    int status;
-
-    err = pthread_create(&minimetro, NULL, &cabina, (void *) &minimetro);
-
-    if (err != 0)
-    {
-        perror("Creating T1");
-        exit(EXIT_FAILURE);
-    } 
-    
-    printf("IO SONO IL MAIN\n");
-
-    sleep(10);
-    cond = 0;
-    pthread_join(minimetro, (void *) &status);
-    printf("T1: %d\n", status);*/
-
     // Inizializzazione Turisti
     pthread_t turisti[NTURISTI];
 
@@ -213,29 +190,5 @@ int main(int argc, char const *argv[])
         thread_join(turisti[i], NULL);
     }
 
-    /*
-    pthread_t t1;
-    int err;
-    int status;
-
-    init_data *data = malloc(sizeof(init_data));
-    data->tid = &t1;
-    data->posizione = 0;
-    
-    err = pthread_create(&t1, NULL, &turista, (void *) data);
-    
-    if (err != 0)
-    {
-        perror("Creating T1");
-        exit(EXIT_FAILURE);
-    } 
-
-    sleep(5);
-
-    pthread_cond_broadcast(&stazione);
-
-    pthread_join(t1, (void *) &status);
-    printf("T1: %d\n", status);
-    */
     return 0;
 }
