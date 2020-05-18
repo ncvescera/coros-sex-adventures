@@ -5,14 +5,14 @@
     #include <unistd.h>
     #include <pthread.h>
 
+    enum fermata {STAZIONE, CENTRO};
+
     // Struttura utilizzata per passare i dati di inizializzazione ai thread Turista
     struct init_data
     {
         pthread_t *tid;
-        int posizione;
+        enum fermata posizione;
     };
-
-    enum fermata {STAZIONE, CENTRO};
 
     typedef struct init_data init_data; // typedef per semplificare il nome di struct init_data
     typedef enum fermata fermata;

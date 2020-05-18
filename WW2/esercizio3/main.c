@@ -89,7 +89,7 @@ static void *turista(void *arg)
     // inizializza il turista
     init_data *data = (init_data *) arg;
     pthread_t *id = data->tid;
-    int posizione = data->posizione;
+    fermata posizione = data->posizione;
 
     // elimina la memoria allocata dinamicamente ormai non più utile
     free(data);
@@ -99,7 +99,7 @@ static void *turista(void *arg)
         // identifica la stazione in cui si trova
         pthread_cond_t *local_posizione;
 
-        if (posizione == 0)
+        if (posizione == STAZIONE)
         {
             local_posizione = &stazione;
             
@@ -131,12 +131,12 @@ static void *turista(void *arg)
             thread_mutex_unlock(&mtx);
 
             // inversione della stazione
-            if (posizione == 0)
+            if (posizione == STAZIONE)
             {
-                posizione = 1;
+                posizione = CENTRO;
             } else
             {   
-                posizione = 0;
+                posizione = STAZIONE;
             }
 
             sleep(2);
@@ -181,7 +181,7 @@ int main(int argc, char const *argv[])
     // inizializzo un thread con posizione centro storico
     init_data *data = malloc(sizeof(init_data));
     data->tid = &turisti[0];
-    data->posizione = 1;
+    data->posizione = CENTRO;
 
     thread_create(&turisti[0], NULL, &turista, (void *) data);
 
@@ -192,7 +192,7 @@ int main(int argc, char const *argv[])
     {
         init_data *data = malloc(sizeof(init_data));
         data->tid = &turisti[i];
-        data->posizione = 0;
+        data->posizione = STAZIONE;
 
         thread_create(&turisti[i], NULL, &turista, (void *) data);
 
