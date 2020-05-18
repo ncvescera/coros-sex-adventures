@@ -25,4 +25,7 @@
 
     void thread_mutex_lock(pthread_mutex_t *mutex); /* Gestisce gli errori della funzione  pthread_mutex_lock */
     void thread_mutex_unlock(pthread_mutex_t *mutex);   /* Gestisce gli errori della funzione  pthread_mutex_unlock */
+
+    char *post_to_str(fermata pos);
+
 #endif

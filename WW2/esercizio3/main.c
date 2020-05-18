@@ -88,7 +88,7 @@ static void *turista(void *arg)
     pthread_t *id = data->tid;
     fermata posizione = data->posizione;
 
-    printf("ID: %ld, \n", *id);
+    printf("ID: %ld, %s\n", *id, post_to_str(posizione));
 
     // elimina la memoria allocata dinamicamente ormai non più utile
     free(data);
