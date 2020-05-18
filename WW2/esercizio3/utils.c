@@ -84,6 +84,7 @@ void thread_mutex_unlock(pthread_mutex_t *mutex)
     return;
 }
 
+/* Data la posizione ritorna il nome (string) della posizione */
 char *pos_to_str(fermata pos)
 {
     if (pos == STAZIONE)
