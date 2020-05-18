@@ -47,9 +47,9 @@ static void *cabina(void *arg)
         // blocca la risorsa dagli altri thread
         thread_mutex_lock(&mtx);
 
-        printf("\nPARTENZA ...\n");
+        printf("\nPARTENZA da %s...\n", pos_to_str(posizione));
         sleep(2);
-        printf("Arrivo!\n\n");
+        printf("Arrivo in %s!\n\n", pos_to_str(!posizione));
 
         // libera la risorsa
         thread_mutex_unlock(&mtx);
@@ -88,7 +88,7 @@ static void *turista(void *arg)
     pthread_t *id = data->tid;
     fermata posizione = data->posizione;
 
-    printf("ID: %ld, %s\n", *id, post_to_str(posizione));
+    printf("ID: %ld, %s\n", *id, pos_to_str(posizione));
 
     // elimina la memoria allocata dinamicamente ormai non più utile
     free(data);

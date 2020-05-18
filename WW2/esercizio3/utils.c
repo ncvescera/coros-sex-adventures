@@ -84,7 +84,7 @@ void thread_mutex_unlock(pthread_mutex_t *mutex)
     return;
 }
 
-char *post_to_str(fermata pos)
+char *pos_to_str(fermata pos)
 {
     if (pos == STAZIONE)
     {
