@@ -88,6 +88,8 @@ static void *turista(void *arg)
     pthread_t *id = data->tid;
     fermata posizione = data->posizione;
 
+    printf("ID: %ld, \n", *id);
+
     // elimina la memoria allocata dinamicamente ormai non più utile
     free(data);
 
@@ -162,8 +164,6 @@ int main(int argc, char const *argv[])
 
     thread_create(&turisti[0], NULL, &turista, (void *) data);
 
-    printf("ID: %ld ", turisti[0]);
-
     // inizializzo gli altri thread con posizione stazione
     for (int i = 1; i < NTURISTI; i++)
     {
@@ -172,8 +172,6 @@ int main(int argc, char const *argv[])
         data->posizione = STAZIONE;
 
         thread_create(&turisti[i], NULL, &turista, (void *) data);
-
-        printf("ID: %ld ", turisti[i]);
     }
 
     printf("\n\n");
