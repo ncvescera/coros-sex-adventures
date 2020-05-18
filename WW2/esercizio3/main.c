@@ -1,35 +1,31 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <pthread.h>
-
 #include "utils.h"
-
 
 // inizializza il mutex per la cabina
 static pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER; 
 
-// CV per centro e stazione
+// CV per centro, stazione e interno del mini
 static pthread_cond_t stazione = PTHREAD_COND_INITIALIZER;
 static pthread_cond_t centro_storico = PTHREAD_COND_INITIALIZER;
 static pthread_cond_t in_mini = PTHREAD_COND_INITIALIZER;
 
-// Posti del minimetro
+// Posti del mini
 static const int POSTI_MAX = 4; // numero massimo di passeggeri per navetta
-static int n_posti; 
+static int n_posti;             // posti attuali nella navetta
 
+/* Rappresenta il funzionamento della cabina */
 static void *cabina(void *arg)
 {
     //int *myid = (int *) arg; // qualora servisse l'id del thread
     n_posti = POSTI_MAX; // inizializza il numero di posti dipsonibili
-    int posizione = 0;  // la posizione attuale del mini, 0 stazione, 1 centro storico
+    //int posizione = 0;  // la posizione attuale del mini, 0 stazione, 1 centro storico
+    fermata posizione = STAZIONE;
 
     while (1)
     {
         // identifica quali thread svegliare
         pthread_cond_t *local_posizione;
 
-        if (posizione == 0)
+        if (posizione == STAZIONE)
         {
             local_posizione = &stazione;
         } else
@@ -73,12 +69,12 @@ static void *cabina(void *arg)
         printf("\n");
 
         // inversione della stazione
-        if (posizione == 0)
+        if (posizione == STAZIONE)
         {
-            posizione = 1;
+            posizione = CENTRO;
         } else
         {   
-            posizione = 0;
+            posizione = STAZIONE;
         }
 
         sleep(2);   // attende 2 secondi altrimenti i turisti non riceverebbero il signale per svegliarsi
@@ -87,6 +83,7 @@ static void *cabina(void *arg)
     return((void *) 0);
 }
 
+/* Rappresenta il comportamento di un turista */
 static void *turista(void *arg)
 {
     // inizializza il turista

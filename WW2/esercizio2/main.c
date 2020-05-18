@@ -30,26 +30,26 @@ int fibonacci(int n)
     // Primo Fork
     pid1 = fork();
 
+    // controlla se è un processo figlio
     if (pid1 == 0)
     {
-        exit(fibonacci(n-1));
-    } else if (pid1 < 0)
+        exit(fibonacci(n-1));   // continua con la ricorsione
+    } else if (pid1 < 0)    // controlla se c'è stato un errore
     {
         perror("Fork1");
-        //fprintf(stderr, "Fork1");
         exit(EXIT_FAILURE);
     }
 
     // Secondo Fork
     pid2 = fork();
 
+    // controlla se è un processo figlio
     if (pid2 == 0)
     {
-        exit(fibonacci(n-2));
-    } else if (pid2 < 0)
+        exit(fibonacci(n-2));   // continua con la ricorsione
+    } else if (pid2 < 0)    // controlla se c'è stato un errore
     {
         perror("Fork2");
-        //fprintf(stderr, "Fork2");
         exit(EXIT_FAILURE);
     }
 
@@ -70,6 +70,7 @@ int fibonacci(int n)
         exit(EXIT_FAILURE);
     }
 
+    // aggiunge il risultato 2 al risultato totale
     result += WEXITSTATUS(status);
 
 	return (result);
@@ -96,6 +97,7 @@ int str_to_int(const char *str)
 
 int main(int argc, char const *argv[])
 {
+    // controlla che gli argomenti passati siano esattamente 2
     if (argc == 2)
     {
         int cifra = str_to_int(argv[1]);    // converte la stringa in input in intero
