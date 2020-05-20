@@ -174,6 +174,8 @@ int main(int argc, char const *argv[])
         thread_create(&turisti[i], NULL, &turista, (void *) data);
     }
 
+    sleep(1);
+
     printf("\n\n");
 
     // Inizializzazione Mini
