@@ -46,7 +46,7 @@ int main(int argc, char const *argv[])
         exit(EXIT_FAILURE);
     } else
     {
-        char *path;
+        const char *path;
 
         // controllo se è una valida estenzione
         if ( ! is_good_ext(argv[1]) )
