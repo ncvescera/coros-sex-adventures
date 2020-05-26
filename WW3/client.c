@@ -4,10 +4,13 @@
 #include <sys/un.h>
 #include <sys/socket.h>
 #include <errno.h>
+#include <signal.h>
 
 #include "socket_name.h"
 #include "utils.h"
 
+static int sock;
+static int conn;
 
 char *str_input()
 {
@@ -32,11 +35,45 @@ char *str_input()
     return tmp_str;
 }
 
+void signal_handler(int arg)
+{
+    int writed = write(sock, "quit", strlen("quit"));
+
+    if (writed == -1)
+    {
+        int err = errno;
+        perror("Writeing on stream");
+        exit(err);
+    }
+
+    int err;
+
+    // chiusura della connessione e gestione errori
+    err = close(conn);
+    
+    if (err != 0)
+    {
+        err = errno;
+        perror("Closing connection");
+        exit(err);
+    }
+
+    // chiusura del socket e gestione degli errori
+    err = close(sock);
+    
+    if (err != 0)
+    {
+        err = errno;
+        perror("Closing socket");
+        exit(err);
+    }
+
+    exit(0);
+}
+
+
 int main(int argc, char const *argv[])
 {
-    int sock;
-    int conn;
-
     struct sockaddr_un address;
     
 
@@ -62,6 +99,11 @@ int main(int argc, char const *argv[])
         perror("Connecting");
         exit(err);
     }
+
+    signal(SIGINT, signal_handler);
+    signal(SIGQUIT, signal_handler);
+    signal(SIGTERM, signal_handler);
+    signal(SIGHUP, signal_handler);
 
     char *BUFF; // buffer per scrivere nello stream
 
@@ -107,7 +149,7 @@ int main(int argc, char const *argv[])
             perror("Writeing on stream");
             exit(err);
         }
-        
+
         printf("\n");
 
         // pulisce il buffer
