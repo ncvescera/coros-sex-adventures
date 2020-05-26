@@ -10,6 +10,7 @@
 #include <sys/un.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
+#include <errno.h>
 #include "socket_name.h"
 #include "utils.h"
 
@@ -51,29 +52,75 @@ int main(int argc, char const *argv[])
     strncpy(address.sun_path, SOCKET_NAME, UNIX_PATH_MAX);
     address.sun_family = AF_UNIX;
 
+    // creazione del socket e gestione errori
     sock = socket(AF_UNIX, SOCK_STREAM, 0);
 
+    if (sock == -1)
+    {
+        int err = errno;
+        perror("Creating socket");
+        exit(err);
+    }
+
+    // connessione e gestione errori
     conn = connect(sock, (struct sockaddr *) &address, sizeof(address));
 
-    char *BUFF;
+    if (conn != 0)
+    {
+        int err = errno;
+        perror("Connecting");
+        exit(err);
+    }
+
+    char *BUFF; // buffer per scrivere nello stream
+
     while (1)
     {
-        
+        // acquisizione stringa dall'utente
         BUFF = str_input();
 
-        write(sock, BUFF, strlen(BUFF));
+        // scrittura nello stream e gestione degli errori
+        int writed = write(sock, BUFF, strlen(BUFF));
 
-       if (strcmp(BUFF, "quit") == 0)
+        if (writed == -1)
+        {
+            int err = errno;
+            perror("Writeing on stream");
+            exit(err);
+        }
+
+        // se il client scrive "quit" si disconnette
+        if (strcmp(BUFF, "quit") == 0)
         {
             free(BUFF);
             break;
         }
 
+        // pulisce il buffer
         free(BUFF);
     }
-    //sleep(3);
-    close(conn);
-    close(sock);
+
+    int err;
+
+    // chiusura della connessione e gestione errori
+    err = close(conn);
     
+    if (err != 0)
+    {
+        err = errno;
+        perror("Closing connection");
+        exit(err);
+    }
+
+    // chiusura del socket e gestione degli errori
+    err = close(sock);
+    
+    if (err != 0)
+    {
+        err = errno;
+        perror("Closing socket");
+        exit(err);
+    }
+
     return EXIT_SUCCESS;
 }

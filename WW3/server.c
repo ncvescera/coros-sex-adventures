@@ -7,7 +7,6 @@
 #include "socket_name.h"
 #include <unistd.h>
 #include <pthread.h>
-#include <stdlib.h>
 
 #define UNIX_PATH_MAX 108
 
@@ -34,46 +33,61 @@ char *invert_letter_case(const char* stringa)
 
 void *handler(void *arg)
 {
-    int connessione = *(int *) arg;;
+    int connessione = *(int *) arg; // prende l'argomento passatogli
     
-    char id[64];
-    sprintf(id, "%d", connessione);
+    //char id[64];
+    //sprintf(id, "%d", connessione);
     
-    char *buff;
+    char *buff; // buffer per leggere lo stream
 
     while(1)
     {
+        // alloca il buffer e controlla gli errori
         buff = (char *) mcalloc(1024, sizeof(char));
-        
+ 
+        // legge dallo stream e controlla errori
         int readed = read(connessione, buff, 1024);
 
         if (readed < 0)
         {
             int err = errno;
             perror("Reading stream");
-            exit(err);
+            _exit(err);
         }
 
+        // controlla se il client si è disconnesso
         if (strcmp(buff, "quit") == 0)
         {
             free(buff);
             break;
         }
 
-        write(STDOUT_FILENO, id, strlen(id));
-        write(STDOUT_FILENO, ": ", 2);
+        // stampa cosa ha letto
+        printf("%d: ", connessione);
+        fflush(stdout);
+        
         write(STDOUT_FILENO, buff, readed);
-        write(STDOUT_FILENO, "\n", 1);
+        
+        printf("\n");
+        fflush(stdout);
 
-        free(buff);
+        free(buff); // pulisce il buffer
     }
     
 
-    close(connessione);
+    int quit = close(connessione);
+
+    if (quit != 0)
+    {
+        int err = errno;
+        perror("Closing stream");
+        _exit(err);
+    }
 
     printf("Client %d disconnesso\n", connessione);
 
     return (void *) 0;
+    //_exit(EXIT_SUCCESS);
 }
 
 int main(int argc, char const *argv[])
@@ -120,9 +134,10 @@ int main(int argc, char const *argv[])
         exit(err);
     }
 
+    // gestione delle connessioni
     while (1)
     {
-        // dovrebbe creare un nuovo thread
+        // accetta la nuova connessione
         int connessione = accept(server_fd, NULL, NULL);
 
         if (connessione < 0)
@@ -132,11 +147,19 @@ int main(int argc, char const *argv[])
             exit(err);
         }
 
+        // Crea il thread che si occuperà della connessione
         printf("Client connesso %d\n", connessione);
 
         pthread_t pid;
-        pthread_create(&pid, NULL, &handler, (void *) &connessione);
         
+        int result = pthread_create(&pid, NULL, &handler, (void *) &connessione);
+        
+        if (result != 0)
+        {
+            fprintf(stderr, "Creating thread\n");
+            exit(EXIT_FAILURE);
+        }
+
         /*
         int p = accept(server_fd, NULL, NULL);
         char tmp[] = "TESTO";
