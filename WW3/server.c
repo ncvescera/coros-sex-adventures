@@ -3,12 +3,11 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <errno.h>
-#include "utils.h"
-#include "socket_name.h"
 #include <unistd.h>
 #include <pthread.h>
 
-#define UNIX_PATH_MAX 108
+#include "utils.h"
+#include "socket_name.h"
 
 
 char *invert_letter_case(const char* stringa)
@@ -43,10 +42,10 @@ void *handler(void *arg)
     while(1)
     {
         // alloca il buffer e controlla gli errori
-        buff = (char *) mcalloc(1024, sizeof(char));
+        buff = (char *) mcalloc(MAX_INPUT_SIZE, sizeof(char));
  
         // legge dallo stream e controlla errori
-        int readed = read(connessione, buff, 1024);
+        int readed = read(connessione, buff, MAX_INPUT_SIZE);
 
         if (readed < 0)
         {
