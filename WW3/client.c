@@ -68,6 +68,7 @@ int main(int argc, char const *argv[])
     while (1)
     {
         // acquisizione stringa dall'utente
+        printf("> ");
         BUFF = str_input();
 
         // scrittura nello stream e gestione degli errori
@@ -86,6 +87,28 @@ int main(int argc, char const *argv[])
             free(BUFF);
             break;
         }
+
+        // legge la risposta del server gestendo errori
+        int readed = read(sock, BUFF, MAX_INPUT_SIZE);
+
+        if (readed < 0)
+        {
+            int err = errno;
+            perror("Reading stream");
+            exit(err);
+        }
+
+        // stampa la risposta del server
+        writed = write(STDOUT_FILENO, BUFF, readed);
+
+        if (writed == -1)
+        {
+            int err = errno;
+            perror("Writeing on stream");
+            exit(err);
+        }
+        
+        printf("\n");
 
         // pulisce il buffer
         free(BUFF);

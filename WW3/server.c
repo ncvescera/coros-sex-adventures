@@ -34,9 +34,6 @@ void *handler(void *arg)
 {
     int connessione = *(int *) arg; // prende l'argomento passatogli
     
-    //char id[64];
-    //sprintf(id, "%d", connessione);
-    
     char *buff; // buffer per leggere lo stream
 
     while(1)
@@ -70,7 +67,22 @@ void *handler(void *arg)
         printf("\n");
         fflush(stdout);
 
-        free(buff); // pulisce il buffer
+        char *inverted = invert_letter_case(buff);
+
+        int writed = write(connessione, inverted, strlen(inverted));
+
+        if (writed == -1)
+        {
+            int err = errno;
+            perror("Writeing on stream");
+            _exit(err);
+        }
+        //printf("\t\t%s\n", inverted);
+        //fflush(stdout);
+        
+        // pulisce i buffer
+        free(inverted);
+        free(buff);
     }
     
 
@@ -86,7 +98,6 @@ void *handler(void *arg)
     printf("Client %d disconnesso\n", connessione);
 
     return (void *) 0;
-    //_exit(EXIT_SUCCESS);
 }
 
 int main(int argc, char const *argv[])
