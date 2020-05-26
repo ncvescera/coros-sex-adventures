@@ -61,19 +61,19 @@ int main(int argc, char const *argv[])
         
         BUFF = str_input();
 
-        if (strcmp(BUFF, "quit") == 0)
+        write(sock, BUFF, strlen(BUFF));
+
+       if (strcmp(BUFF, "quit") == 0)
         {
             free(BUFF);
             break;
         }
 
-        write(sock, BUFF, strlen(BUFF));
-
         free(BUFF);
     }
-    /*sleep(3);
+    //sleep(3);
     close(conn);
     close(sock);
-    */
+    
     return EXIT_SUCCESS;
 }

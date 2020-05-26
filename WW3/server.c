@@ -7,6 +7,7 @@
 #include "socket_name.h"
 #include <unistd.h>
 #include <pthread.h>
+#include <stdlib.h>
 
 #define UNIX_PATH_MAX 108
 
@@ -34,14 +35,24 @@ char *invert_letter_case(const char* stringa)
 void *handler(void *arg)
 {
     int connessione = *(int *) arg;;
-   
+    
+    char id[64];
+    sprintf(id, "%d", connessione);
+    
     char *buff;
 
     while(1)
     {
         buff = (char *) mcalloc(1024, sizeof(char));
         
-        read(connessione, buff, 1024);
+        int readed = read(connessione, buff, 1024);
+
+        if (readed < 0)
+        {
+            int err = errno;
+            perror("Reading stream");
+            exit(err);
+        }
 
         if (strcmp(buff, "quit") == 0)
         {
@@ -49,8 +60,10 @@ void *handler(void *arg)
             break;
         }
 
-        printf("%s\n", buff);
-        fflush(stdout);
+        write(STDOUT_FILENO, id, strlen(id));
+        write(STDOUT_FILENO, ": ", 2);
+        write(STDOUT_FILENO, buff, readed);
+        write(STDOUT_FILENO, "\n", 1);
 
         free(buff);
     }
@@ -58,8 +71,7 @@ void *handler(void *arg)
 
     close(connessione);
 
-    printf("Client disconnesso\n");
-    fflush(stdout);
+    printf("Client %d disconnesso\n", connessione);
 
     return (void *) 0;
 }
@@ -120,7 +132,7 @@ int main(int argc, char const *argv[])
             exit(err);
         }
 
-        printf("Client connesso\n");
+        printf("Client connesso %d\n", connessione);
 
         pthread_t pid;
         pthread_create(&pid, NULL, &handler, (void *) &connessione);
