@@ -44,11 +44,12 @@ void *handler(void *arg)
         // legge dallo stream e controlla errori
         int readed = read(connessione, buff, MAX_INPUT_SIZE);
 
-        if (readed < 0)
+        if (readed <= 0)
         {
             int err = errno;
             perror("Reading stream");
-            _exit(err);
+            //_exit(err);
+            return (void *) -1;
         }
 
         // controlla se il client si è disconnesso
@@ -71,7 +72,7 @@ void *handler(void *arg)
 
         int writed = write(connessione, inverted, strlen(inverted));
 
-        if (writed == -1)
+        if (writed <= 0)
         {
             int err = errno;
             perror("Writeing on stream");
