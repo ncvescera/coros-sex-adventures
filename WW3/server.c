@@ -44,7 +44,7 @@ void *handler(void *arg)
         // legge dallo stream e controlla errori
         int readed = read(connessione, buff, MAX_INPUT_SIZE);
 
-        if (readed <= 0)
+        if (readed < 0)
         {
             int err = errno;
             perror("Reading stream");
@@ -68,6 +68,7 @@ void *handler(void *arg)
         printf("\n");
         fflush(stdout);
 
+        // inverte la stringa e la rimanda al client
         char *inverted = invert_letter_case(buff);
 
         int writed = write(connessione, inverted, strlen(inverted));
@@ -78,8 +79,6 @@ void *handler(void *arg)
             perror("Writeing on stream");
             _exit(err);
         }
-        //printf("\t\t%s\n", inverted);
-        //fflush(stdout);
         
         // pulisce i buffer
         free(inverted);
