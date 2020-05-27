@@ -77,6 +77,14 @@ int main(int argc, char const *argv[])
 
         if (writed <= 0)
         {
+            if (writed == 0)
+            {
+                printf("Chiuso dal server\n");
+                fflush(stdout);
+
+                break;
+            }
+
             perror("Writeing on stream");
             exit(EXIT_FAILURE);
         }
@@ -97,6 +105,14 @@ int main(int argc, char const *argv[])
 
         if (readed <= 0)
         {
+            if (readed == 0)
+            {
+                printf("Chiuso dal server\n");
+                fflush(stdout);
+
+                break;
+            }
+
             perror("Reading stream");
             exit(EXIT_FAILURE);
         }

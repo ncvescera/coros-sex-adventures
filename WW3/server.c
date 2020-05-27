@@ -152,6 +152,13 @@ void *handler(void *arg)
 
         if (readed < 0)
         {
+            if (readed == 0)
+            {
+                printf("Chiuso dal client\n");
+                fflush(stdout);
+
+                break;
+            }
             perror("Reading stream");
 
             return (void *) -1;
@@ -180,6 +187,13 @@ void *handler(void *arg)
 
         if (writed <= 0)
         {
+            if (writed == 0)
+            {
+                printf("Chiuso dal client\n");
+                fflush(stdout);
+
+                break;
+            }
             perror("Writeing on stream");
 
             return (void *) -1;
