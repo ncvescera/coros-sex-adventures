@@ -12,64 +12,8 @@
 static int sock;
 static int conn;
 
-char *str_input()
-{
-    // inizializza la stringa
-    char *tmp_str = (char *) mcalloc(MAX_INPUT_SIZE, sizeof(char));
-
-    // prende in input la stringa
-    fgets(tmp_str, MAX_INPUT_SIZE, stdin);
-
-    // lunghezza della stringa
-    int str_size = strlen(tmp_str);
-
-    // elimina lo \n finale solo se la stringa non occupa tutto l'array
-    if ((str_size + 1) != MAX_INPUT_SIZE)
-    {
-        tmp_str[str_size - 1] = '\0';
-    }
-
-    // sistema e rialloca la stringa
-    tmp_str = (char *) mrealloc(tmp_str, str_size);
-
-    return tmp_str;
-}
-
-void signal_handler(int arg)
-{
-    int writed = write(sock, "quit", strlen("quit"));
-
-    if (writed == -1)
-    {
-        int err = errno;
-        perror("Writeing on stream");
-        exit(err);
-    }
-
-    int err;
-
-    // chiusura della connessione e gestione errori
-    err = close(conn);
-    
-    if (err != 0)
-    {
-        err = errno;
-        perror("Closing connection");
-        exit(err);
-    }
-
-    // chiusura del socket e gestione degli errori
-    err = close(sock);
-    
-    if (err != 0)
-    {
-        err = errno;
-        perror("Closing socket");
-        exit(err);
-    }
-
-    exit(0);
-}
+char *str_input();
+void signal_handler(int arg);
 
 
 int main(int argc, char const *argv[])
@@ -179,4 +123,63 @@ int main(int argc, char const *argv[])
     }
 
     return EXIT_SUCCESS;
+}
+
+char *str_input()
+{
+    // inizializza la stringa
+    char *tmp_str = (char *) mcalloc(MAX_INPUT_SIZE, sizeof(char));
+
+    // prende in input la stringa
+    fgets(tmp_str, MAX_INPUT_SIZE, stdin);
+
+    // lunghezza della stringa
+    int str_size = strlen(tmp_str);
+
+    // elimina lo \n finale solo se la stringa non occupa tutto l'array
+    if ((str_size + 1) != MAX_INPUT_SIZE)
+    {
+        tmp_str[str_size - 1] = '\0';
+    }
+
+    // sistema e rialloca la stringa
+    tmp_str = (char *) mrealloc(tmp_str, str_size);
+
+    return tmp_str;
+}
+
+void signal_handler(int arg)
+{
+    int writed = write(sock, "quit", strlen("quit"));
+
+    if (writed == -1)
+    {
+        int err = errno;
+        perror("Writeing on stream");
+        exit(err);
+    }
+
+    int err;
+
+    // chiusura della connessione e gestione errori
+    err = close(conn);
+    
+    if (err != 0)
+    {
+        err = errno;
+        perror("Closing connection");
+        exit(err);
+    }
+
+    // chiusura del socket e gestione degli errori
+    err = close(sock);
+    
+    if (err != 0)
+    {
+        err = errno;
+        perror("Closing socket");
+        exit(err);
+    }
+
+    exit(0);
 }

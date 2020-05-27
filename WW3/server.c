@@ -10,6 +10,83 @@
 #include "socket_name.h"
 
 
+char *invert_letter_case(const char* stringa);
+void *handler(void *arg);
+
+int main(int argc, char const *argv[])
+{
+    // definizione dei valori per socket
+    int server_fd;
+    struct sockaddr_un address;
+    
+
+    strncpy(address.sun_path, SOCKET_NAME, UNIX_PATH_MAX);
+    address.sun_family = AF_UNIX;
+
+    /*
+    struct sockaddr_un address; = {AF_UNIX, SOCKET_NAME};
+    */
+
+    // creazione del socket
+    server_fd = socket(AF_UNIX, SOCK_STREAM, 0);
+
+    if (server_fd == -1)
+    {
+        int err = errno;
+        perror("Creating socket");
+        exit(err);
+    }
+
+    // binding del socket
+    int bind_result = bind(server_fd, (struct sockaddr *) &address, sizeof(address));
+
+    if (bind_result == -1)
+    {
+        int err = errno;
+        perror("Binding socket");
+        exit(err);
+    }
+
+    // listening
+    int listen_result = listen(server_fd, SOMAXCONN);
+
+    if (listen_result == -1)
+    {
+        int err = errno;
+        perror("Listening");
+        exit(err);
+    }
+
+    // gestione delle connessioni
+    while (1)
+    {
+        // accetta la nuova connessione
+        int connessione = accept(server_fd, NULL, NULL);
+
+        if (connessione < 0)
+        {
+            int err = errno;
+            perror("Accepting connection");
+            exit(err);
+        }
+
+        // Crea il thread che si occuperà della connessione
+        printf("Client connesso %d\n", connessione);
+
+        pthread_t pid;
+        
+        int result = pthread_create(&pid, NULL, &handler, (void *) &connessione);
+        
+        if (result != 0)
+        {
+            fprintf(stderr, "Creating thread\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+    
+    return EXIT_SUCCESS;
+}
+
 char *invert_letter_case(const char* stringa)
 {
     int str_size = strlen(stringa);
@@ -99,78 +176,4 @@ void *handler(void *arg)
     printf("Client %d disconnesso\n", connessione);
 
     return (void *) 0;
-}
-
-int main(int argc, char const *argv[])
-{
-    // definizione dei valori per socket
-    int server_fd;
-    struct sockaddr_un address;
-    
-
-    strncpy(address.sun_path, SOCKET_NAME, UNIX_PATH_MAX);
-    address.sun_family = AF_UNIX;
-
-    /*
-    struct sockaddr_un address; = {AF_UNIX, SOCKET_NAME};
-    */
-
-    // creazione del socket
-    server_fd = socket(AF_UNIX, SOCK_STREAM, 0);
-
-    if (server_fd == -1)
-    {
-        int err = errno;
-        perror("Creating socket");
-        exit(err);
-    }
-
-    // binding del socket
-    int bind_result = bind(server_fd, (struct sockaddr *) &address, sizeof(address));
-
-    if (bind_result == -1)
-    {
-        int err = errno;
-        perror("Binding socket");
-        exit(err);
-    }
-
-    // listening
-    int listen_result = listen(server_fd, SOMAXCONN);
-
-    if (listen_result == -1)
-    {
-        int err = errno;
-        perror("Listening");
-        exit(err);
-    }
-
-    // gestione delle connessioni
-    while (1)
-    {
-        // accetta la nuova connessione
-        int connessione = accept(server_fd, NULL, NULL);
-
-        if (connessione < 0)
-        {
-            int err = errno;
-            perror("Accepting connection");
-            exit(err);
-        }
-
-        // Crea il thread che si occuperà della connessione
-        printf("Client connesso %d\n", connessione);
-
-        pthread_t pid;
-        
-        int result = pthread_create(&pid, NULL, &handler, (void *) &connessione);
-        
-        if (result != 0)
-        {
-            fprintf(stderr, "Creating thread\n");
-            exit(EXIT_FAILURE);
-        }
-    }
-    
-    return EXIT_SUCCESS;
 }
