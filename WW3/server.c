@@ -70,6 +70,9 @@ int main(int argc, char const *argv[])
     }
 
     signal(SIGINT, signal_handler);
+    signal(SIGQUIT, signal_handler);
+    signal(SIGTERM, signal_handler);
+    signal(SIGHUP, signal_handler);
 
 
     // gestione delle connessioni
