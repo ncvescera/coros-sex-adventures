@@ -60,7 +60,7 @@ int main(int argc, char const *argv[])
         // scrittura nello stream e gestione degli errori
         int writed = write(sock, BUFF, strlen(BUFF));
 
-        if (writed == -1)
+        if (writed <= 0)
         {
             int err = errno;
             perror("Writeing on stream");
@@ -77,7 +77,7 @@ int main(int argc, char const *argv[])
         // legge la risposta del server gestendo errori
         int readed = read(sock, BUFF, MAX_INPUT_SIZE);
 
-        if (readed < 0)
+        if (readed <= 0)
         {
             int err = errno;
             perror("Reading stream");

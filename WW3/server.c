@@ -5,21 +5,32 @@
 #include <errno.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <signal.h>
 
 #include "utils.h"
 #include "socket_name.h"
 
+int server_fd;
 
 char *invert_letter_case(const char* stringa);
 void *handler(void *arg);
+void signal_handler(int arg);
+void cleanup();
 
 int main(int argc, char const *argv[])
 {
+    int err = atexit(cleanup);
+
+    if (err < 0)
+    {
+        err = errno;
+        perror("On exit");
+        exit(err);
+    }
+    
     // definizione dei valori per socket
-    int server_fd;
     struct sockaddr_un address;
     
-
     strncpy(address.sun_path, SOCKET_NAME, UNIX_PATH_MAX);
     address.sun_family = AF_UNIX;
 
@@ -49,6 +60,7 @@ int main(int argc, char const *argv[])
 
     // listening
     int listen_result = listen(server_fd, SOMAXCONN);
+    //int listen_result = listen(server_fd, 1);
 
     if (listen_result == -1)
     {
@@ -56,6 +68,9 @@ int main(int argc, char const *argv[])
         perror("Listening");
         exit(err);
     }
+
+    signal(SIGINT, signal_handler);
+
 
     // gestione delle connessioni
     while (1)
@@ -111,6 +126,15 @@ void *handler(void *arg)
 {
     int connessione = *(int *) arg; // prende l'argomento passatogli
     
+    int err = pthread_detach(pthread_self());
+
+    if (err != 0)
+    {
+        err = errno;
+        perror("Setting thread attribute");
+        return (void *) -1;
+    }
+
     char *buff; // buffer per leggere lo stream
 
     while(1)
@@ -176,4 +200,37 @@ void *handler(void *arg)
     printf("Client %d disconnesso\n", connessione);
 
     return (void *) 0;
+}
+
+void signal_handler(int arg)
+{
+    cleanup();
+
+    _exit(EXIT_SUCCESS);
+}
+
+void cleanup()
+{
+    int err;
+
+    // chiusura della connessione e gestione errori
+    err = close(server_fd);
+    
+    if (err != 0)
+    {
+        err = errno;
+        perror("Closing connection");
+        _exit(err);
+    }
+
+    err = unlink(SOCKET_NAME);
+
+    if (err != 0)
+    {
+        err = errno;
+        perror("Unlinking");
+        _exit(err);
+    }
+
+    return;
 }
