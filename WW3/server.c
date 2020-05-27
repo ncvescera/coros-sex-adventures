@@ -60,12 +60,37 @@ int main(int argc, char const *argv[])
         exit(EXIT_FAILURE);
     }
 
+    /*
     // inizializzazione degli handler per i segnali
     signal(SIGINT, signal_handler);
     signal(SIGQUIT, signal_handler);
     signal(SIGTERM, signal_handler);
     signal(SIGHUP, signal_handler);
+    */
 
+    struct sigaction signal_action;
+    signal_action.sa_handler = signal_handler;
+
+    if (sigaction(SIGINT, &signal_action, 0) != 0)
+    {
+        perror("SIGINT");
+        exit(EXIT_FAILURE);
+    }
+    if (sigaction(SIGQUIT, &signal_action, 0) != 0)
+    {
+        perror("SIGQUIT");
+        exit(EXIT_FAILURE);
+    }
+    if (sigaction(SIGTERM, &signal_action, 0) != 0)
+    {
+        perror("SIGTERM");
+        exit(EXIT_FAILURE);
+    }
+    if (sigaction(SIGHUP, &signal_action, 0) != 0)
+    {
+        perror("SIGHUP");
+        exit(EXIT_FAILURE);
+    }
 
     // gestione delle connessioni
     while (1)
