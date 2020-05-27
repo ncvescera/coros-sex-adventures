@@ -1,7 +1,7 @@
 CC = gcc
-CFLAGS = -Wall -pedantic -std=c99
+CFLAGS = -Wall -pedantic
 
-.PHONY: clean
+.PHONY: all clean
 
 all: server client
 
