@@ -3,7 +3,6 @@
 #include <sys/types.h>
 #include <sys/un.h>
 #include <sys/socket.h>
-#include <errno.h>
 #include <signal.h>
 
 #include "socket_name.h"
@@ -14,7 +13,7 @@ static int conn;
 
 char *str_input();
 void signal_handler(int arg);
-
+void cleanup();
 
 int main(int argc, char const *argv[])
 {
@@ -29,9 +28,8 @@ int main(int argc, char const *argv[])
 
     if (sock == -1)
     {
-        int err = errno;
         perror("Creating socket");
-        exit(err);
+        exit(EXIT_FAILURE);
     }
 
     // connessione e gestione errori
@@ -39,9 +37,8 @@ int main(int argc, char const *argv[])
 
     if (conn != 0)
     {
-        int err = errno;
         perror("Connecting");
-        exit(err);
+        exit(EXIT_FAILURE);
     }
 
     // inizializzazione degli handler per i segnali
@@ -63,9 +60,8 @@ int main(int argc, char const *argv[])
 
         if (writed <= 0)
         {
-            int err = errno;
             perror("Writeing on stream");
-            exit(err);
+            exit(EXIT_FAILURE);
         }
 
         // se il client scrive "quit" si disconnette
@@ -84,9 +80,8 @@ int main(int argc, char const *argv[])
 
         if (readed <= 0)
         {
-            int err = errno;
             perror("Reading stream");
-            exit(err);
+            exit(EXIT_FAILURE);
         }
 
         // controlla se il server ritorna un errore
@@ -100,9 +95,8 @@ int main(int argc, char const *argv[])
 
             if (writed == -1)
             {
-                int err = errno;
                 perror("Writeing on stream");
-                exit(err);
+                exit(EXIT_FAILURE);
             }
 
             printf("\n");
@@ -112,27 +106,7 @@ int main(int argc, char const *argv[])
         free(BUFF);
     }
 
-    int err;
-
-    // chiusura della connessione e gestione errori
-    err = close(conn);
-    
-    if (err != 0)
-    {
-        err = errno;
-        perror("Closing connection");
-        exit(err);
-    }
-
-    // chiusura del socket e gestione degli errori
-    err = close(sock);
-    
-    if (err != 0)
-    {
-        err = errno;
-        perror("Closing socket");
-        exit(err);
-    }
+    cleanup();
 
     return EXIT_SUCCESS;
 }
@@ -167,11 +141,17 @@ void signal_handler(int arg)
 
     if (writed == -1)
     {
-        int err = errno;
         perror("Writeing on stream");
-        exit(err);
+        exit(EXIT_FAILURE);
     }
 
+    cleanup();
+
+    exit(0);
+}
+
+void cleanup()
+{
     int err;
 
     // chiusura della connessione e gestione errori
@@ -179,20 +159,16 @@ void signal_handler(int arg)
     
     if (err != 0)
     {
-        err = errno;
         perror("Closing connection");
-        exit(err);
+        exit(EXIT_FAILURE);
     }
-
+    
     // chiusura del socket e gestione degli errori
     err = close(sock);
     
     if (err != 0)
     {
-        err = errno;
         perror("Closing socket");
-        exit(err);
+        exit(EXIT_FAILURE);
     }
-
-    exit(0);
 }

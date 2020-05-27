@@ -2,7 +2,6 @@
 #include <ctype.h>
 #include <sys/socket.h>
 #include <sys/un.h>
-#include <errno.h>
 #include <unistd.h>
 #include <pthread.h>
 #include <signal.h>
@@ -24,9 +23,8 @@ int main(int argc, char const *argv[])
 
     if (err < 0)
     {
-        err = errno;
         perror("On exit");
-        exit(err);
+        exit(EXIT_FAILURE);
     }
     
     // definizione dei valori per socket
@@ -40,9 +38,8 @@ int main(int argc, char const *argv[])
 
     if (server_fd == -1)
     {
-        int err = errno;
         perror("Creating socket");
-        exit(err);
+        exit(EXIT_FAILURE);
     }
 
     // binding del socket
@@ -50,9 +47,8 @@ int main(int argc, char const *argv[])
 
     if (bind_result == -1)
     {
-        int err = errno;
         perror("Binding socket");
-        exit(err);
+        exit(EXIT_FAILURE);
     }
 
     // listening
@@ -60,9 +56,8 @@ int main(int argc, char const *argv[])
 
     if (listen_result == -1)
     {
-        int err = errno;
         perror("Listening");
-        exit(err);
+        exit(EXIT_FAILURE);
     }
 
     // inizializzazione degli handler per i segnali
@@ -80,9 +75,8 @@ int main(int argc, char const *argv[])
 
         if (connessione < 0)
         {
-            int err = errno;
             perror("Accepting connection");
-            exit(err);
+            exit(EXIT_FAILURE);
         }
 
         // Crea il thread che si occuperà della connessione
@@ -135,13 +129,13 @@ char *invert_letter_case(const char* stringa)
 void *handler(void *arg)
 {
     int connessione = *(int *) arg; // prende l'argomento passatogli
+    int err;
     
     // setta il thread come detach
-    int err = pthread_detach(pthread_self());
+    err = pthread_detach(pthread_self());
 
     if (err != 0)
     {
-        err = errno;
         perror("Setting thread attribute");
         return (void *) -1;
     }
@@ -158,7 +152,6 @@ void *handler(void *arg)
 
         if (readed < 0)
         {
-            int err = errno;
             perror("Reading stream");
 
             return (void *) -1;
@@ -187,7 +180,6 @@ void *handler(void *arg)
 
         if (writed <= 0)
         {
-            int err = errno;
             perror("Writeing on stream");
 
             return (void *) -1;
@@ -199,13 +191,12 @@ void *handler(void *arg)
     }
     
     // chiude la connessione
-    int quit = close(connessione);
+    err = close(connessione);
 
-    if (quit != 0)
+    if (err != 0)
     {
-        int err = errno;
         perror("Closing stream");
-        _exit(err);
+        return (void *) -1;
     }
 
     printf("Client %d disconnesso\n", connessione);
@@ -229,18 +220,16 @@ void cleanup()
     
     if (err != 0)
     {
-        err = errno;
         perror("Closing connection");
-        _exit(err);
+        _exit(EXIT_FAILURE);
     }
 
     err = unlink(SOCKET_NAME);
 
     if (err != 0)
     {
-        err = errno;
         perror("Unlinking");
-        _exit(err);
+        _exit(EXIT_FAILURE);
     }
 
     return;
