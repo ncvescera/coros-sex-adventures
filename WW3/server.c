@@ -154,7 +154,7 @@ void *handler(void *arg)
         }
 
         // controlla se il client si è disconnesso
-        if (strcmp(buff, "quit") == 0)
+        if (strncmp(buff, "quit", strlen("quit")) == 0)
         {
             free(buff);
             break;

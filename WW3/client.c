@@ -68,7 +68,7 @@ int main(int argc, char const *argv[])
         }
 
         // se il client scrive "quit" si disconnette
-        if (strcmp(BUFF, "quit") == 0)
+        if (strncmp(BUFF, "quit", strlen("quit")) == 0)
         {
             free(BUFF);
             break;
