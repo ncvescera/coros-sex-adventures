@@ -77,7 +77,8 @@ void *handler(void *arg)
         {
             int err = errno;
             perror("Writeing on stream");
-            _exit(err);
+            //_exit(err);
+            return (void *) -1;
         }
         
         // pulisce i buffer
@@ -169,28 +170,7 @@ int main(int argc, char const *argv[])
             fprintf(stderr, "Creating thread\n");
             exit(EXIT_FAILURE);
         }
-
-        /*
-        int p = accept(server_fd, NULL, NULL);
-        char tmp[] = "TESTO";
-
-        sleep(2);
-
-        write(p, tmp, strlen(tmp));
-
-        close(p);
-        sleep(1);
-        */
     }
-    /*
-    char *test = str_input();
-
-    char *inverted = invert_letter_case(test);
     
-    printf("%s\n", inverted);
-    
-    free(inverted);
-    free(test);
-    */
     return EXIT_SUCCESS;
 }
