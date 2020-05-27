@@ -18,9 +18,9 @@ void signal_handler(int arg);
 
 int main(int argc, char const *argv[])
 {
+    // definizione degli attributi per il socket
     struct sockaddr_un address;
     
-
     strncpy(address.sun_path, SOCKET_NAME, UNIX_PATH_MAX);
     address.sun_family = AF_UNIX;
 
@@ -44,6 +44,7 @@ int main(int argc, char const *argv[])
         exit(err);
     }
 
+    // inizializzazione degli handler per i segnali
     signal(SIGINT, signal_handler);
     signal(SIGQUIT, signal_handler);
     signal(SIGTERM, signal_handler);
@@ -74,6 +75,10 @@ int main(int argc, char const *argv[])
             break;
         }
 
+        // pulizia del buffer
+        free(BUFF);
+        BUFF = (char *) mcalloc(sizeof(char), MAX_INPUT_SIZE);
+
         // legge la risposta del server gestendo errori
         int readed = read(sock, BUFF, MAX_INPUT_SIZE);
 
@@ -84,18 +89,25 @@ int main(int argc, char const *argv[])
             exit(err);
         }
 
-        // stampa la risposta del server
-        writed = write(STDOUT_FILENO, BUFF, readed);
-
-        if (writed == -1)
+        // controlla se il server ritorna un errore
+        if (readed == 1 && BUFF[0] == 27)
         {
-            int err = errno;
-            perror("Writeing on stream");
-            exit(err);
+            fprintf(stderr, "La stringa contiene spazi :/\n");
+        } else
+        {
+            // stampa la risposta del server
+            writed = write(STDOUT_FILENO, BUFF, readed);
+
+            if (writed == -1)
+            {
+                int err = errno;
+                perror("Writeing on stream");
+                exit(err);
+            }
+
+            printf("\n");
         }
-
-        printf("\n");
-
+    
         // pulisce il buffer
         free(BUFF);
     }
@@ -150,6 +162,7 @@ char *str_input()
 
 void signal_handler(int arg)
 {
+    // interrompe la connessione con il server
     int writed = write(sock, "quit", strlen("quit"));
 
     if (writed == -1)

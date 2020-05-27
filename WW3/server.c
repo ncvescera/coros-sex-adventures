@@ -19,6 +19,7 @@ void cleanup();
 
 int main(int argc, char const *argv[])
 {
+    // funzione che verrà invocata alla chiusura del programma
     int err = atexit(cleanup);
 
     if (err < 0)
@@ -33,10 +34,6 @@ int main(int argc, char const *argv[])
     
     strncpy(address.sun_path, SOCKET_NAME, UNIX_PATH_MAX);
     address.sun_family = AF_UNIX;
-
-    /*
-    struct sockaddr_un address; = {AF_UNIX, SOCKET_NAME};
-    */
 
     // creazione del socket
     server_fd = socket(AF_UNIX, SOCK_STREAM, 0);
@@ -60,7 +57,6 @@ int main(int argc, char const *argv[])
 
     // listening
     int listen_result = listen(server_fd, SOMAXCONN);
-    //int listen_result = listen(server_fd, 1);
 
     if (listen_result == -1)
     {
@@ -69,6 +65,7 @@ int main(int argc, char const *argv[])
         exit(err);
     }
 
+    // inizializzazione degli handler per i segnali
     signal(SIGINT, signal_handler);
     signal(SIGQUIT, signal_handler);
     signal(SIGTERM, signal_handler);
@@ -89,8 +86,6 @@ int main(int argc, char const *argv[])
         }
 
         // Crea il thread che si occuperà della connessione
-        printf("Client connesso %d\n", connessione);
-
         pthread_t pid;
         
         int result = pthread_create(&pid, NULL, &handler, (void *) &connessione);
@@ -100,6 +95,8 @@ int main(int argc, char const *argv[])
             fprintf(stderr, "Creating thread\n");
             exit(EXIT_FAILURE);
         }
+
+        printf("Client connesso %d\n", connessione);
     }
     
     return EXIT_SUCCESS;
@@ -113,12 +110,22 @@ char *invert_letter_case(const char* stringa)
 
     for (int i = 0; i < str_size; i++)
     {
-        if (islower(stringa[i]))    // se è lowecase
+        if (isspace(stringa[i]))
         {
-            result[i] = (char) toupper(stringa[i]);
+            // crea la stringa di errore
+            result[0] = (char) 27;
+            result[1] = '\0';
+
+            return result;
         } else
         {
-           result[i] = (char) tolower(stringa[i]);
+            if (islower(stringa[i]))    // se è lowecase
+            {
+                result[i] = (char) toupper(stringa[i]);
+            } else
+            {
+                result[i] = (char) tolower(stringa[i]);
+            }
         }
     }
 
@@ -129,6 +136,7 @@ void *handler(void *arg)
 {
     int connessione = *(int *) arg; // prende l'argomento passatogli
     
+    // setta il thread come detach
     int err = pthread_detach(pthread_self());
 
     if (err != 0)
@@ -152,7 +160,7 @@ void *handler(void *arg)
         {
             int err = errno;
             perror("Reading stream");
-            //_exit(err);
+
             return (void *) -1;
         }
 
@@ -181,7 +189,7 @@ void *handler(void *arg)
         {
             int err = errno;
             perror("Writeing on stream");
-            //_exit(err);
+
             return (void *) -1;
         }
         
@@ -190,7 +198,7 @@ void *handler(void *arg)
         free(buff);
     }
     
-
+    // chiude la connessione
     int quit = close(connessione);
 
     if (quit != 0)
