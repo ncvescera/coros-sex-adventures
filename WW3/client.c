@@ -171,4 +171,6 @@ void cleanup()
         perror("Closing socket");
         exit(EXIT_FAILURE);
     }
+
+    return;
 }
