@@ -44,7 +44,13 @@ int main(int argc, char const *argv[])
     // gestione dei segnali
     struct sigaction signal_action;
     signal_action.sa_handler = signal_handler;
-
+    
+    if (sigaction(SIGPIPE, &signal_action, 0) != 0)
+    {
+        perror("SIGPIPE");
+        exit(EXIT_FAILURE);
+    }
+    
     if (sigaction(SIGINT, &signal_action, 0) != 0)
     {
         perror("SIGINT");
@@ -172,14 +178,17 @@ char *str_input()
 void signal_handler(int arg)
 {
     printf("\nSignal: %d\n", arg);
-
-    // interrompe la connessione con il server
-    int writed = write(sock, "quit", strlen("quit"));
-
-    if (writed == -1)
+    
+    if (arg != SIGPIPE)
     {
-        perror("Writeing on stream");
-        exit(EXIT_FAILURE);
+    	// interrompe la connessione con il server
+    	int writed = write(sock, "quit", strlen("quit"));
+
+    	if (writed == -1)
+    	{
+        	perror("Writeing on stream");
+        	exit(EXIT_FAILURE);
+    	}
     }
 
     cleanup();
