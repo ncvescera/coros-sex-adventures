@@ -171,6 +171,8 @@ char *str_input()
 
 void signal_handler(int arg)
 {
+    printf("\nSignal: %d\n", arg);
+
     // interrompe la connessione con il server
     int writed = write(sock, "quit", strlen("quit"));
 
@@ -187,6 +189,8 @@ void signal_handler(int arg)
 
 void cleanup()
 {
+    printf("Cleaning up\n");
+    
     int err;
 
     // chiusura della connessione e gestione errori
