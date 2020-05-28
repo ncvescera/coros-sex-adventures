@@ -85,6 +85,9 @@ int main(int argc, char const *argv[])
         exit(EXIT_FAILURE);
     }
 
+    printf("In attesa di connessioni ...\n");
+    fflush(stdout);
+
     // gestione delle connessioni
     while (1)
     {
@@ -238,6 +241,9 @@ void *handler(void *arg)
 
 void signal_handler(int arg)
 {
+    printf("\nSignal: %d\n", arg);
+    fflush(stdout);
+
     cleanup();
 
     _exit(EXIT_SUCCESS);
@@ -245,6 +251,9 @@ void signal_handler(int arg)
 
 void cleanup()
 {
+    printf("Cleaning up\n");
+    fflush(stdout);
+
     int err;
 
     // chiusura della connessione e gestione errori
