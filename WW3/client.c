@@ -4,11 +4,12 @@
 #include <sys/un.h>
 #include <sys/socket.h>
 #include <signal.h>
-#include "socket_name.h"
-#include "utils.h"
 
-static int sock;
-static int conn;
+#include "utils.h"
+#include "socket_name.h"
+
+int sock;
+int conn;
 
 char *str_input();
 void signal_handler(int arg);
@@ -40,6 +41,7 @@ int main(int argc, char const *argv[])
         exit(EXIT_FAILURE);
     }
 
+    // gestione dei segnali
     struct sigaction signal_action;
     signal_action.sa_handler = signal_handler;
 
