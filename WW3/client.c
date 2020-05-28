@@ -143,7 +143,7 @@ int main(int argc, char const *argv[])
         // controlla se il server ritorna un errore
         if (readed == 1 && BUFF[0] == 27)
         {
-            fprintf(stderr, "La stringa contiene spazi :/\n");
+            fprintf(stderr, "La stringa contiene spazzi :/\n");
         } else
         {
             // stampa la risposta del server
