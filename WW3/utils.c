@@ -1,5 +1,6 @@
 #include "utils.h"
 
+/* Gestione degli errori di malloc */
 void *mcalloc(size_t dim, size_t type)
 {
     void *result = calloc(dim, type);
@@ -13,6 +14,7 @@ void *mcalloc(size_t dim, size_t type)
     return result;
 }
 
+/* Gestione degli errori di realloc */
 void *mrealloc(void *ptr, size_t size)
 {
     void *result = realloc(ptr, size);

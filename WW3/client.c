@@ -8,12 +8,24 @@
 #include "utils.h"
 #include "socket_name.h"
 
-int sock;
-int conn;
+/*
+ * Codice del Client.
+ * 
+ * Il client inizializza il socket e si connette al server, gestendo i vari errori possibili durante la connessione.
+ * Attende una stringa dall'utente che poi verrà mandata al server.
+ * Aspetta la risposta del server, controlla se è un errore e stampa a video il risultato di conseguenza.
+ * 
+ * Nel client ho utilizzato dei signal handler per effettuare un'uscita pulita e per evitare crash del server.
+ * Ho utilizzato anche un signal handler per il segnale SIGPIPE per evitare l'insorgere dell'errore Broken Pipe.
+ * 
+ */
 
-char *str_input();
-void signal_handler(int arg);
-void cleanup();
+int sock;   // id socket
+int conn;   // id connessione
+
+char *str_input();              /* Prende in input una stringa inserita dall'utente */
+void signal_handler(int arg);   /* Gestisce i vari segnali */
+void cleanup();                 /* Chiude le connessioni per l'uscita del programma */
 
 int main(int argc, char const *argv[])
 {
@@ -56,16 +68,19 @@ int main(int argc, char const *argv[])
         perror("SIGINT");
         exit(EXIT_FAILURE);
     }
+
     if (sigaction(SIGQUIT, &signal_action, 0) != 0)
     {
         perror("SIGQUIT");
         exit(EXIT_FAILURE);
     }
+    
     if (sigaction(SIGTERM, &signal_action, 0) != 0)
     {
         perror("SIGTERM");
         exit(EXIT_FAILURE);
     }
+    
     if (sigaction(SIGHUP, &signal_action, 0) != 0)
     {
         perror("SIGHUP");
@@ -152,6 +167,7 @@ int main(int argc, char const *argv[])
     return EXIT_SUCCESS;
 }
 
+/* Prende in input una stringa inserita dall'utente */
 char *str_input()
 {
     // inizializza la stringa
@@ -175,10 +191,12 @@ char *str_input()
     return tmp_str;
 }
 
+/* Gestisce i vari segnali */
 void signal_handler(int arg)
 {
     printf("\nSignal: %d\n", arg);
     
+    // Se il segnale è SIGPIPE non scrive al server il comando di uscita
     if (arg != SIGPIPE)
     {
     	// interrompe la connessione con il server
@@ -196,6 +214,7 @@ void signal_handler(int arg)
     exit(0);
 }
 
+/* Chiude le connessioni per l'uscita del programma */
 void cleanup()
 {
     printf("Cleaning up\n");

@@ -9,13 +9,33 @@
 #include "utils.h"
 #include "socket_name.h"
 
-int server_fd;
+/*
+ * Codice del Server.
+ * 
+ * Il server inizializza il socket AF_UNIX e rimane in ascolto di connessioni dai vari client.
+ * Gestisce i veri errori che possono occorrere durante la creazione del socket, binding, linking e accettazione delle connessioni in entrata.
+ * 
+ * Per ogni connessione accettata viene creato un thread che la gestirà.
+ * Il thread viene settato come detach per poter rilasciare le risorse una volta terminato.
+ * Il thread si aspetta un messaggio dal client, controlla se la stringa ha spazzi (in caso crea una stringa di errore da inviare al client) e inverte i caratteri.
+ * Risponde al client con la stringa appena creata e ricomincia ad aspettare altri messaggi dal client.
+ * Il thread gestisce i vari errori di scrittura e lettura, in caso di problemi chiude la connessione e muore.
+ * 
+ * Il server all'uscita invoca la funzione cleanup() per chiudere tutte le connessioni e per fare l'Unlink del soket.
+ * 
+ * Nel server vengono gestiti i segnali SIGINT, SIGQUIT, SIGTERM, SIGHUP tramite un signal handler chie invoca la funzione signal_handler().
+ * Per tutti i segnali, tranne SIGPIPE, vengono chiuse le connessioni e il server viene terminato.
+ * Col SIGPIPE il server non si interrompe ma causa la morte del thread che lo ha causato permettendo così al server di non fermarsi e continuare a gestire le varie connessioni.
+ *
+ */
 
-char *invert_letter_case(const char* stringa);
-void *handler(void *arg);
-void signal_handler(int arg);
-void cleanup();
-int close_connection(int connessione);
+int server_fd;  // id socket
+
+char *invert_letter_case(const char* stringa);  /* Trasforma le lettere da maiuscole a minuscole e viceversa */
+void *handler(void *arg);                       /* Gestisce la connessione tra server e client */
+void signal_handler(int arg);                   /* Gestisce i veri segnali */
+void cleanup();                                 /* Chiude gli stream per l'uscita del programma */
+int close_connection(int connessione);          /* Chiude lo stream/connessione con id passatogli */
 
 int main(int argc, char const *argv[])
 {
@@ -123,6 +143,7 @@ int main(int argc, char const *argv[])
     return EXIT_SUCCESS;
 }
 
+/* Trasforma le lettere da maiuscole a minuscole e viceversa */
 char *invert_letter_case(const char* stringa)
 {
     int str_size = strlen(stringa);
@@ -131,6 +152,7 @@ char *invert_letter_case(const char* stringa)
 
     for (int i = 0; i < str_size; i++)
     {
+        // controlla se la stringa contiene spazzi
         if (isspace(stringa[i]))
         {
             // crea la stringa di errore
@@ -153,8 +175,10 @@ char *invert_letter_case(const char* stringa)
     return result;
 }
 
+/* Chiude lo stream/connessione con id passatogli */
 int close_connection(int connessione)
 {
+    // Chiusura della connessione con controllo di errori
     int err = close(connessione);
 
     if (err != 0)
@@ -168,6 +192,7 @@ int close_connection(int connessione)
     return 0;
 }
 
+/* Gestisce la connessione tra server e client */
 void *handler(void *arg)
 {
     int connessione = *(int *) arg; // prende l'argomento passatogli
@@ -247,8 +272,11 @@ void *handler(void *arg)
     return (void *) 0;
 }
 
+/* Gestisce i veri segnali */
 void signal_handler(int arg)
 {
+    // ignora il segnale che causa l'errore Broken Pipe
+    // Verrà gestito dall'hendler della connessione
     if (arg == SIGPIPE)
     {
         return;
@@ -262,6 +290,7 @@ void signal_handler(int arg)
     _exit(EXIT_SUCCESS);
 }
 
+/* Chiude gli stream per l'uscita del programma */
 void cleanup()
 {
     printf("Cleaning up\n");
