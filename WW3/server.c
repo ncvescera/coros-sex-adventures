@@ -15,6 +15,7 @@ char *invert_letter_case(const char* stringa);
 void *handler(void *arg);
 void signal_handler(int arg);
 void cleanup();
+int close_connection(int connessione);
 
 int main(int argc, char const *argv[])
 {
@@ -64,6 +65,11 @@ int main(int argc, char const *argv[])
     struct sigaction signal_action;
     signal_action.sa_handler = signal_handler;
 
+    if (sigaction(SIGPIPE, &signal_action, 0) != 0)
+    {
+        perror("SIGPIPE");
+        exit(EXIT_FAILURE);
+    }
     if (sigaction(SIGINT, &signal_action, 0) != 0)
     {
         perror("SIGINT");
@@ -147,6 +153,21 @@ char *invert_letter_case(const char* stringa)
     return result;
 }
 
+int close_connection(int connessione)
+{
+    int err = close(connessione);
+
+    if (err != 0)
+    {
+        perror("Closing stream");
+        return -1;
+    }
+
+    printf("Client %d disconnesso\n", connessione);
+
+    return 0;
+}
+
 void *handler(void *arg)
 {
     int connessione = *(int *) arg; // prende l'argomento passatogli
@@ -158,6 +179,8 @@ void *handler(void *arg)
     if (err != 0)
     {
         perror("Setting thread attribute");
+        close_connection(connessione);
+
         return (void *) -1;
     }
 
@@ -173,14 +196,8 @@ void *handler(void *arg)
 
         if (readed < 0)
         {
-            if (readed == 0)
-            {
-                printf("Chiuso dal client\n");
-                fflush(stdout);
-
-                break;
-            }
             perror("Reading stream");
+            close_connection(connessione);
 
             return (void *) -1;
         }
@@ -208,14 +225,8 @@ void *handler(void *arg)
 
         if (writed <= 0)
         {
-            if (writed == 0)
-            {
-                printf("Chiuso dal client\n");
-                fflush(stdout);
-
-                break;
-            }
             perror("Writeing on stream");
+            close_connection(connessione);
 
             return (void *) -1;
         }
@@ -226,21 +237,23 @@ void *handler(void *arg)
     }
     
     // chiude la connessione
-    err = close(connessione);
+    err = close_connection(connessione);
 
     if (err != 0)
     {
-        perror("Closing stream");
         return (void *) -1;
     }
-
-    printf("Client %d disconnesso\n", connessione);
 
     return (void *) 0;
 }
 
 void signal_handler(int arg)
 {
+    if (arg == SIGPIPE)
+    {
+        return;
+    }
+
     printf("\nSignal: %d\n", arg);
     fflush(stdout);
 
