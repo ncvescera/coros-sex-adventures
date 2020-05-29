@@ -59,6 +59,17 @@ int main(int argc, char const *argv[])
     memset(&signal_action, 0, sizeof(signal_action));
     signal_action.sa_handler = signal_handler;
     
+    // maschera per i segnali
+    sigset_t mask;
+    sigemptyset(&mask);
+    sigaddset(&mask, SIGINT);
+    sigaddset(&mask, SIGPIPE);
+    sigaddset(&mask, SIGQUIT);
+    sigaddset(&mask, SIGTERM);
+    sigaddset(&mask, SIGHUP);
+
+    signal_action.sa_mask = mask;
+
     if (sigaction(SIGPIPE, &signal_action, 0) != 0)
     {
         perror("SIGPIPE");
