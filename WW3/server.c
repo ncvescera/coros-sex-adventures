@@ -50,7 +50,8 @@ int main(int argc, char const *argv[])
     
     // definizione dei valori per socket
     struct sockaddr_un address;
-    
+    memset(&address, '0', sizeof(address));
+
     strncpy(address.sun_path, SOCKET_NAME, UNIX_PATH_MAX);
     address.sun_family = AF_UNIX;
 
@@ -83,6 +84,7 @@ int main(int argc, char const *argv[])
 
     // gestione dei segnali
     struct sigaction signal_action;
+    memset(&signal_action, 0, sizeof(signal_action));
     signal_action.sa_handler = signal_handler;
 
     if (sigaction(SIGPIPE, &signal_action, 0) != 0)
